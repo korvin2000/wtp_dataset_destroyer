@@ -17,9 +17,6 @@ nodes = [
     "pepedd-nodes>=0.1.0"
 ]
 
-[tool.uv]
-package-dir = "src"
-
 [tool.uv.sources]
 pepedd-nodes = { workspace = true }
 
