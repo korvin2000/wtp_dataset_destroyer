@@ -11,10 +11,10 @@ from ..utils.custom_blur.gauss import gauss
 from ..utils.custom_blur.lens_blur import lens_blur
 from ..utils.custom_blur.motion_blur import motion_blur
 from ..utils.custom_blur.rkernel_blur import random_kernel_blur
-from pepedd.core.node_register import register_class
-from pepedd.core.objects.lq_hq_state import LQHQState
-from pepedd.core.objects.node_base import Node
-from pepedd.core.objects.safe_rng import SafeRNG
+from pepedd  import register_class
+from pepedd.objects.lq_hq_state import LQHQState
+from pepedd  import Node
+from pepedd.objects.safe_rng import SafeRNG
 from logging import debug
 
 

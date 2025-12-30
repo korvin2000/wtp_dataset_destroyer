@@ -5,7 +5,7 @@ from logging import debug
 from pepeline import jpeg_encode
 
 from .video import video_core
-from pepedd.core.objects.safe_rng import SafeRNG
+from pepedd.objects.safe_rng import SafeRNG
 import cv2
 
 
