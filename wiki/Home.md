@@ -1,26 +1,51 @@
-# **What is PepeDD (Wtp Dataset Destroyer):**
-PepeDD is a library for generating paired datasets with diverse and complex degradations that mimic real-world distortions found in images and videos from various sources. In other words, you take high-quality (HQ) source data and use it to create either a paired dataset or only degraded data (LQ). As a result, you obtain a dataset where LQ serves as the neural network input, and HQ represents the expected output.
+# **What is PepeDD (WTP Dataset Destroyer)**
+PepeDD is a Python library for building paired datasets by applying configurable degradations to high-quality (HQ) images to create low-quality (LQ) targets. The output is suitable for supervised restoration, enhancement, and super-resolution pipelines.
 
-## **Key features of the library:**
+## **Project model (current implementation)**
+The core pipeline is implemented in `pepedd.pipeline.PipeLine`. It:
 
-* **Complex degradation pipelines:** combining multiple transformations with controllable probabilities and parameters, applied strictly in sequence.
-* **Flexible configuration:** built on Pydantic; settings can be defined either as objects or dictionaries, simplifying integration into different projects.
-* **Extensibility:** the ability to create and plug in custom degradations as modular add-ons.
-* **Experiment reproducibility:** control over the random number generator seed to precisely reproduce results and experiments.
+* Reads images as `float32` (`ImgFormat.F32`) via `pepeline.read`/`read_tiler`.
+* Builds a sequential list of *nodes* (degradations), each of which is a `Node` that can be probabilistically applied.
+* Seeds per-image randomness using a stable mix of `seed` + `image path` (+ `tile index` for tiling).
+* Writes LQ (and optionally HQ) PNGs into `output/lq` and `output/hq`.
 
-## **Conceptual diagram:**
+Conceptual flow:
 
 ```
 Input Image
-    │
-    ▼
+   │
+   ▼
 [Degradation Pipeline]
-    ├─ Blur (motion, gaussian, defocus)
-    ├─ Compression (JPEG, WebP)
-    └─ ...
-    │
-    ▼
-Output Image
+   ├─ blur
+   ├─ resize
+   ├─ compress
+   └─ ...
+   │
+   ▼
+Output LQ (and HQ)
 ```
 
-Each block in the pipeline can be configured via a configuration that defines its parameters, application probability, and execution order.
+## **Key invariants**
+* **Determinism:** global `seed` plus per-image mixing yields stable outputs given the same inputs and configuration.
+* **Sequential semantics:** degradations are executed in order, left-to-right, without reordering.
+* **Node-level probability:** each degradation node can be conditionally applied (`probability`).
+* **Data model:** both HQ and LQ live in `LQHQState`; nodes can modify either or both.
+
+## **Configuration philosophy (program of thought)**
+Use the pipeline as a probabilistic program. A practical design loop:
+
+1. **Define invariants** — target output size, HQ/LQ pairing rules, reproducibility requirements.
+2. **Choose a minimal chain** — start with the smallest set of degradations that reproduce your target artifacts.
+3. **Bound randomness** — for each node, set safe ranges and a probability that reflects how often you see the artifact.
+4. **Validate edges** — ensure no node produces invalid shapes, invalid ranges, or type mismatches.
+5. **Iterate** — add one node at a time; measure the delta.
+
+This pipeline-first, invariant-driven approach avoids overly chaotic degradations that harm training stability.
+
+## **Add-ons and modularity**
+Nodes (degradations) are registered dynamically through decorators. Importing `pepedd_nodes` triggers registration of built-in nodes. Custom add-ons can register new node types without modifying the core pipeline.
+
+See:
+* **Quick Start** for getting running fast.
+* **Config-Base** for pipeline options.
+* **Config-* docs** for each degradation’s parameters.
