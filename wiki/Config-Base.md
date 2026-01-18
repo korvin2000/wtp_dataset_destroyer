@@ -1,70 +1,110 @@
+# Pipeline configuration (base)
+
+## Python usage
+
 ```py
-from pepedd.core import PipeLine, PipelineOptions, Degradation
-from pepedd.core.pipeline.schema import TileOptions
-from pepedd.nodes.blur import BlurOptions
+from pepedd.pipeline.pipeline import PipeLine
+from pepedd.pipeline.schema import PipelineOptions, Degradation, TileOptions
+import pepedd_nodes
+from pepedd_nodes.blur import BlurOptions
+
 options = PipelineOptions(
     input="input_dir",  # str
     output="output_dir",  # str
-    map_type="simple",  # Literal["simple", "thread", "process"]
+    map_type="thread",  # "simple" | "thread" | "process"
     degradation=[
         Degradation(
-            type="blur", #str
-            options=BlurOptions() #BaseModel | Dict
+            type="blur",  # registered node name
+            options=BlurOptions(),  # Pydantic model | dict
         )
-    ],  # List[Degradation]
+    ],
     num_workers=16,
-    tile=TileOptions(size=512, no_wb=True), # Optional[TileOptions]
-    dataset_size=1000, # Optional[int]
-    shuffle_dataset=True, # bool
-    gray=False, # bool
-    debug=True, # bool
-    only_lq=False, # bool
-    real_name=False, # bool
-    output_clear=True, # bool
-    seed=None # Optional[int]
+    tile=TileOptions(size=512, no_wb=True),  # Optional[TileOptions]
+    dataset_size=1000,  # Optional[int]
+    shuffle_dataset=True,
+    gray=False,
+    debug=False,
+    only_lq=False,
+    real_name=False,
+    output_clear=True,
+    seed=None,  # Optional[int]
 )
 
+PipeLine(options)()
 ```
 
-## Parameter Descriptions:
+## Parameter descriptions
 
-* **input** — Directory containing the source images (HQ).
-* **output** — Directory where the generated dataset will be saved.
-* **map_type** — Execution mode for tasks:
-  * `simple` — Sequential processing in a single thread.
-  * `thread` — Multi-threaded mode. Suitable for I/O-bound tasks, but computational operations may block each other due to the GIL (Global Interpreter Lock).
-  * `process` — Multi-processing mode. Each process runs in its own environment with its own GIL, providing true parallelism. **Note:** Requires the script to be executed strictly within an `if __name__ == "__main__":` block.
+* **input** — Directory of HQ images to process.
+* **output** — Output directory. LQ images are stored in `output/lq`, HQ images in `output/hq` (unless `only_lq`).
+* **map_type** — Execution mode:
+  * `simple` — single-threaded loop.
+  * `thread` — thread pool (good for I/O, limited by GIL for CPU-heavy nodes).
+  * `process` — multi-process execution for CPU-bound workloads.
+* **degradation** — Required list of `Degradation` blocks. Each block has a `type` and `options`.
+* **num_workers** — Worker count for `thread`/`process` modes.
+* **tile** — Optional tiling. When set, images are split into tiles of size `tile.size` and processed independently.
+  * `no_wb` skips tiles that are pure white or black.
+* **dataset_size** — Cap the number of processed input files.
+* **shuffle_dataset** — Shuffle input files before processing.
+* **gray** — Read images in grayscale (LQ/HQ are 2D arrays).
+* **debug** — Forces deterministic `map_type="simple"` and records per-image parameters in `debug/*.log`.
+* **only_lq** — Save only LQ outputs.
+* **real_name** — Use original filenames instead of index-based names.
+* **output_clear** — Delete `output` before creating new outputs.
+* **seed** — Global seed. If unset, a random 64-bit seed is generated.
 
-
-* **degradation** — A list of applied degradations. The `type` field specifies the method name, and `options` contains its configuration.
-* **num_workers** — The number of worker threads or processes. This is ignored if `map_type="simple"`.
-* **tile** — Tiling settings (`TileOptions`). If this parameter is not set, images are processed in their entirety.
-* **dataset_size** — The maximum number of images in the final dataset. If not specified, all available files are processed.
-* **shuffle_dataset** — If `True`, the file list is shuffled before processing begins.
-* **gray** — If `True`, images will be forcibly read in grayscale.
-* **debug** — Debug mode. It forces `map_type="simple"` and creates a log file containing pipeline and node parameters.
-* **only_lq** — If `True`, only the augmented (LQ) images are saved, without their corresponding HQ originals.
-* **real_name** — If `True`, saves files using their original names instead of sequential indices. The format is forcibly changed to `.png`.
-* **output_clear** — If `True`, the `output` directory will be completely cleared before the pipeline starts.
-* **seed** — Global value for the random number generator. If not specified, it is generated randomly (in `debug` mode, the value is printed to the log).
-
----
-
-> **Note:** All parameters are optional and have default values, with the exception of **degradation**, which is the only required field.
-
-### Default Values (Implementation):
+## Concurrency and entrypoint
+`map_type="process"` uses `ProcessPoolExecutor`. On Windows (and some Linux configurations), wrap the entrypoint:
 
 ```py
-class Degradation(BaseModel):
-    type: str
-    options: Any
+if __name__ == "__main__":
+    PipeLine(options)()
+```
 
+## HCL-style configuration (external parsing)
 
-class TileOptions(BaseModel):
-    size: int = 512
-    no_wb: bool = True
+The repository contains example HCL config (e.g., `digital_art.hcl`). The core library does **not** ship with an HCL parser, so you must parse it externally and convert it into a `PipelineOptions`-compatible dict.
 
+A minimal mental model:
 
+```hcl
+input = "input_dir"
+output = "output_dir"
+
+# Each degradation is a node with a type and options.
+degradation {
+  type = "blur"
+  options = {
+    filters = ["gauss"]
+    kernel = [0.2, 1.5]
+    probability = 0.3
+  }
+}
+```
+
+Equivalent Python dict:
+
+```py
+{
+  "input": "input_dir",
+  "output": "output_dir",
+  "degradation": [
+    {
+      "type": "blur",
+      "options": {
+        "filters": ["gauss"],
+        "kernel": [0.2, 1.5],
+        "probability": 0.3,
+      },
+    },
+  ],
+}
+```
+
+## Defaults (implementation snapshot)
+
+```py
 class PipelineOptions(BaseModel):
     input: str = "input"
     output: str = "output"
@@ -94,7 +134,7 @@ class PipelineOptions(BaseModel):
                 self.seed = 1234
         if self.seed is None:
             import secrets
+
             self.seed = secrets.randbits(64)
         return self
-
 ```

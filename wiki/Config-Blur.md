@@ -1,8 +1,10 @@
-```py
-from pepedd.core import Degradation
-from pepedd.nodes.blur import BlurOptions,TargetKernels
+# Blur configuration
 
-degratation = Degradation(
+```py
+from pepedd.pipeline.schema import Degradation
+from pepedd_nodes.blur import BlurOptions, TargetKernels
+
+blur = Degradation(
     type="blur",
     options=BlurOptions(
         filters=[
@@ -15,35 +17,54 @@ degratation = Degradation(
             "airy",
             "ring",
             "triangle",
-        ], #LiteralBlur = Literal[ "box", "gauss", "median", "lens", "motion", "random", "airy", "ring", "triangle"]
-        kernel=[1.0, 2.0],  # List max_min_length=2 min_value 0.0 float
-        target_kernels = TargetKernels(
-            box = [2.0,10.0], # Optional List max_min_length=2 min_value 0.0 float
-            gauss = None, # Optional List max_min_length=2 min_value 0.0 float
-            median = None, # Optional List max_min_length=2 min_value 0.0 float
-            lens = None, # Optional List max_min_length=2 min_value 0.0 float
-            random = None, # Optional List max_min_length=2 min_value 0.0 float
-            airy = None, # Optional List max_min_length=2 min_value 0.0 float
-            triangle = None, # Optional List max_min_length=2 min_value 0.0 float
-            ring = None, # Optional List max_min_length=2 min_value 0.0 float
+        ],
+        kernel=[0.1, 2.0],
+        target_kernels=TargetKernels(
+            box=[0.5, 1.5],
+            gauss=None,  # defaults to kernel
+            median=None,
+            lens=None,
+            random=None,
+            airy=None,
+            triangle=None,
+            ring=None,
         ),
-        motion_size = [0, 10], # List max_min_length=2 int
-        motion_angle = [-30.0, 30.0], # List max_min_length=2 float
-        ring_thickness =  [1, 5], # List max_min_length=2 int
-        probability = 1.0, # Float 0-1
-        seed = None # Optional[int]
+        motion_size=[0, 10],
+        motion_angle=[-30.0, 30.0],
+        ring_thickness=[1, 5],
+        probability=1.0,
+        seed=None,
     ),
 )
 ```
-## Parameter Descriptions:
-* **filters** — a list of blur filters to be applied.
-* **kernel** — the base kernel size. For most filters, the final kernel size is calculated as `ceil(kernel) * 2 + 1`. For example, if `1.1` is provided for the `box` filter, the resulting kernel size will be `5`, where the three central values are equal to `1` and the remaining values are `0.1`.
-* **target_kernels** — a list of kernel sizes for each filter. If not specified, the value from `kernel` is used. In practice, this parameter defines the actual kernel sizes, while `kernel` serves as the base value. The kernel size for `motion` cannot be set here and is configured via a separate parameter.
-* **motion_size** — a dedicated parameter for `motion` blur, as it operates differently from other filters. It defines the pixel displacement along the specified rotation angle.
-* **motion_angle** — the rotation angle for `motion` blur.
-* **ring_thickness** — the ring thickness for the `ring` filter.
-* **probability** — the probability of applying the degradation. For example, `0.5` corresponds to 50% and `0.75` to 75%.
-* **seed** — the degradation seed. When set, it overrides the global seed, freezing the degradation output and ensuring reproducibility.
 
-## Default Values (Implementation):
-https://github.com/umzi2/wtp_dataset_destroyer/blob/rework/pepedd/nodes/blur/schemas.py
+## Parameters
+
+* **filters** — List of blur kernels to sample from per image.
+* **kernel** — Base kernel range for all filters (used when `target_kernels` is not set for a specific filter).
+* **target_kernels** — Per-filter kernel ranges. Any `None` entry is filled with `kernel`.
+* **motion_size** — Motion blur kernel size range (integers).
+* **motion_angle** — Motion blur angle range in degrees.
+* **ring_thickness** — Ring blur thickness range (integers).
+* **probability** — Per-node activation probability.
+* **seed** — Optional per-node RNG seed to override the global seed.
+
+## Behavior notes
+
+* Each image chooses **one** blur filter from `filters` at random.
+* All blur filters operate on the LQ image only (HQ is untouched).
+* Motion blur uses both `motion_size` and `motion_angle` ranges.
+
+## HCL example
+
+```hcl
+degradation {
+  type = "blur"
+  options = {
+    filters = ["box", "gauss", "ring"]
+    kernel = [0.1, 1.5]
+    ring_thickness = [1, 3]
+    probability = 0.4
+  }
+}
+```
