@@ -1,4 +1,4 @@
-name: Release PyPi packages
+name: Release PyPi pkgs
 
 on:
   workflow_dispatch:
@@ -9,25 +9,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version-file: ".python-version"
-
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          cache-dependency-glob: "pepedd-core/uv.lock"
+          cache-dependency-glob: "uv.lock"
 
       - name: Build core
-        run: |
-          chmod +x build_core.sh
-          ./build_core.sh
+        run: uv build --package pepedd
+
       - name: Publish core
-        run: |
-          echo $(pwd)
-          uv publish $(pwd)/dist/* -t ${{ secrets.PYPI_TOKEN }}
+        run: uv publish --package pepedd -t ${{ secrets.PYPI_TOKEN }}
 
 
   publish-nodes:
@@ -35,23 +28,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version-file: ".python-version"
-
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          cache-dependency-glob: "pepedd-nodes/uv.lock"
+          cache-dependency-glob: "uv.lock"
 
       - name: Build nodes
-        run: |
-          chmod +x build_nodes.sh
-          ./build_nodes.sh
+        run: uv build --package pepedd_nodes
 
       - name: Publish nodes
-        run: |
-          echo $(pwd)
-          uv publish $(pwd)/dist/* -t ${{ secrets.PYPI_TOKEN }}
+        run: uv publish --package pepedd_nodes -t ${{ secrets.PYPI_TOKEN }}

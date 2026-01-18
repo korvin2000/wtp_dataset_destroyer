@@ -29,10 +29,10 @@ from .schemas import (
     VP9Tune,
     AVIFSPF,
 )
-from pepedd.core.node_register import register_class
-from pepedd.core.objects.lq_hq_state import LQHQState
-from pepedd.core.objects.node_base import Node
-from pepedd.core.objects.safe_rng import SafeRNG
+from pepedd import register_class
+from pepedd.objects.lq_hq_state import LQHQState
+from pepedd import Node
+from pepedd.objects.safe_rng import SafeRNG
 
 
 def base_compress(

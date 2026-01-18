@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 from pepeline import Point, Bresenham, Bezier
 
-from pepedd.core.objects.safe_rng import SafeRNG
+from pepedd.objects.safe_rng import SafeRNG
 
 
 def get_radius_point(

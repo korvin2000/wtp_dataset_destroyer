@@ -14,7 +14,6 @@ resolution-markers = [
 members = [
     "pepedd",
     "pepedd-nodes",
-    "pepedd-workspace",
 ]
 
 [[package]]
@@ -51,11 +50,11 @@ wheels = [
 
 [[package]]
 name = "astropy-iers-data"
-version = "0.2025.12.22.0.40.30"
+version = "0.2025.12.29.0.42.34"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a5/6f/4e58a807384ed69690420b45a850c9117376d1a4558e2d88521fb0a5dd0b/astropy_iers_data-0.2025.12.22.0.40.30.tar.gz", hash = "sha256:19b570afb1396fc4bce302f299f994a4df53d1ecad27bdd73ffef88d5dd70c8d", size = 1917473, upload-time = "2025-12-22T00:41:11.968Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a4/ce/ab1711d22065204ad2f524ceeb21c62f16aa4ad753fc045bfd2c2cf16ebb/astropy_iers_data-0.2025.12.29.0.42.34.tar.gz", hash = "sha256:5de6969463aca7af23ef96c0f54fd5aff2fc74b3942076851324c0a189069f68", size = 1918121, upload-time = "2025-12-29T00:43:17.785Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/07/50501947849e780cb5580ebcd7af08c14d431640562e18a8ac2b055c90ec/astropy_iers_data-0.2025.12.22.0.40.30-py3-none-any.whl", hash = "sha256:2fbc71988d96aa29566667c6568a2bc5ca00748174b1f8ac3e9f7b09d4c27cac", size = 1974071, upload-time = "2025-12-22T00:41:10.191Z" },
+    { url = "https://files.pythonhosted.org/packages/04/d7/73c77e191c46455817bbd039d73d66185fa8e0113d61083fec0750e61906/astropy_iers_data-0.2025.12.29.0.42.34-py3-none-any.whl", hash = "sha256:508b9dfce0486fedc597efb52fcac1df1c82c818f1faf064c44eb02c02421ea4", size = 1974622, upload-time = "2025-12-29T00:43:16.215Z" },
 ]
 
 [[package]]
@@ -251,8 +250,8 @@ wheels = [
 
 [[package]]
 name = "pepedd"
-version = "0.1.0"
-source = { editable = "pepedd-core" }
+version = "0.1.2"
+source = { editable = "pkgs/pepedd" }
 dependencies = [
     { name = "numpy" },
     { name = "pepeline" },
@@ -268,7 +267,7 @@ nodes = [
 [package.metadata]
 requires-dist = [
     { name = "numpy", specifier = "~=2.4.0" },
-    { name = "pepedd-nodes", marker = "extra == 'nodes'", editable = "pepedd-nodes" },
+    { name = "pepedd-nodes", marker = "extra == 'nodes'", editable = "pkgs/pepedd-nodes" },
     { name = "pepeline", specifier = "~=1.2.2" },
     { name = "pydantic", specifier = "~=2.12.5" },
     { name = "tqdm", specifier = "~=4.67.1" },
@@ -277,8 +276,8 @@ provides-extras = ["nodes"]
 
 [[package]]
 name = "pepedd-nodes"
-version = "0.1.0"
-source = { editable = "pepedd-nodes" }
+version = "0.1.1"
+source = { editable = "pkgs/pepedd-nodes" }
 dependencies = [
     { name = "astropy" },
     { name = "chainner-ext" },
@@ -296,25 +295,10 @@ requires-dist = [
     { name = "chainner-ext", specifier = "~=0.3.10" },
     { name = "colour-science", specifier = "~=0.4.7" },
     { name = "opencv-python", specifier = "~=4.11.0.86" },
-    { name = "pepedd", editable = "pepedd-core" },
+    { name = "pepedd", editable = "pkgs/pepedd" },
     { name = "pepedpid", specifier = "~=0.1.1" },
     { name = "scikit-image", specifier = "~=0.26.0" },
     { name = "scipy", specifier = "~=1.16.3" },
-]
-
-[[package]]
-name = "pepedd-workspace"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "pepedd" },
-    { name = "pepedd-nodes" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "pepedd", editable = "pepedd-core" },
-    { name = "pepedd-nodes", editable = "pepedd-nodes" },
 ]
 
 [[package]]

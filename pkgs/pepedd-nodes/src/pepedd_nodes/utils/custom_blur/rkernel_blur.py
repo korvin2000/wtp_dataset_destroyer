@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from pepedd.core.objects.safe_rng import SafeRNG
+from pepedd.objects.safe_rng import SafeRNG
 
 
 def random_kernel_blur(img: np.ndarray, kernel_size: float, rng: SafeRNG) -> np.ndarray:

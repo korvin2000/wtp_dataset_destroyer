@@ -5,9 +5,9 @@ import numpy as np
 
 from .schemas import HaloOptions
 from ..blur.blur import Blur
-from pepedd.core.node_register import register_class
-from pepedd.core.objects.lq_hq_state import LQHQState
-from pepedd.core.objects.node_base import Node
+from pepedd  import register_class
+from pepedd.objects.lq_hq_state import LQHQState
+from pepedd  import Node
 
 
 @register_class("halo")

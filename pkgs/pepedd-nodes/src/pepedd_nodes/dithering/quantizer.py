@@ -6,7 +6,7 @@ from pepeline import PaletteAlg, get_palette
 import numpy as np
 from chainner_ext import UniformQuantization, PaletteQuantization
 
-from pepedd.core.objects.safe_rng import SafeRNG
+from pepedd.objects.safe_rng import SafeRNG
 from logging import debug
 
 
