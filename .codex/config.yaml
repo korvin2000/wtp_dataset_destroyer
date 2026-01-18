@@ -1,0 +1,91 @@
+version: 1
+model:
+  name: gpt-5.2-codex
+  reasoning_effort: xhigh
+  allowed_reasoning_effort:
+    - high
+    - xhigh
+instructions:
+  - Always use model gpt-5.2-codex with reasoning effort high or xhigh; prefer xhigh for architecture or algorithm work.
+  - Preserve dataset pipeline semantics: LQ/HQ pairing, deterministic seeding (seed + image path), and ordered node application.
+  - Keep changes minimal; avoid refactors unless required by the task.
+project:
+  name: WTP Dataset Destroyer (PepeDD)
+  summary: >-
+    Generates paired datasets by applying configurable degradations to HQ images to
+    produce LQ/HQ pairs for restoration/enhancement model training.
+  goals:
+    - Build degradation pipelines with reproducible RNG control.
+    - Support pluggable degradations (nodes) with per-node options/probabilities.
+    - Provide multi-mode execution (simple/thread/process) and optional tiling.
+  non_goals:
+    - Training ML models or serving inference.
+    - Dataset labeling/annotation tools.
+architecture:
+  workspace:
+    type: uv workspace
+    members:
+      - pkgs/pepedd
+      - pkgs/pepedd-nodes
+  core_library:
+    package: pepedd
+    responsibilities:
+      - Pipeline orchestration and execution
+      - Node registration and execution order
+      - RNG utilities and LQ/HQ state management
+  nodes_library:
+    package: pepedd-nodes
+    responsibilities:
+      - Concrete degradations (blur, compress, resize, lines, dithering, halo)
+      - Node option schemas and image transforms
+  data_flow:
+    - Read HQ image -> create LQ/HQ state -> apply nodes in order -> save LQ/HQ
+  concurrency:
+    modes:
+      - simple (single-thread)
+      - thread (tqdm thread_map)
+      - process (ProcessPoolExecutor with worker init)
+configs:
+  - path: digital_art.hcl
+    purpose: Example HCL pipeline configuration for degradations.
+  - path: pyproject.toml
+    purpose: Workspace definition for uv.
+  - path: pkgs/pepedd/pyproject.toml
+    purpose: Core package metadata and dependencies.
+  - path: pkgs/pepedd-nodes/pyproject.toml
+    purpose: Nodes package metadata and dependencies.
+  - path: .python-version
+    purpose: Python version pin (3.11+ expected).
+  - path: uv.lock
+    purpose: Resolved dependency lockfile.
+documentation:
+  - wiki/Home.md
+  - wiki/Quick‐Start.md
+  - wiki/Config-Base.md
+  - wiki/Config-Blur.md
+  - wiki/Config-Compress.md
+  - wiki/Config-Resize.md
+  - wiki/Config-Dithering.md
+  - wiki/Config-Halo.md
+  - wiki/Config-Lines.md
+index:
+  - path: pkgs/pepedd/src/pepedd/pipeline/pipeline.py
+    summary: Pipeline orchestration, execution modes, output setup.
+  - path: pkgs/pepedd/src/pepedd/pipeline/schema.py
+    summary: Pydantic options for pipeline configuration (core defaults).
+  - path: pkgs/pepedd/src/pepedd/pipeline/process.py
+    summary: Node iteration, standard/tiled processing entrypoints.
+  - path: pkgs/pepedd/src/pepedd/pipeline/utils.py
+    summary: Save helpers, path utilities, RNG seed mixing, mp context selection.
+  - path: pkgs/pepedd/src/pepedd/objects/node_base.py
+    summary: Node base class with probability/seed gating.
+  - path: pkgs/pepedd/src/pepedd/objects/lq_hq_state.py
+    summary: Dataclass carrying RNG + LQ/HQ images.
+  - path: pkgs/pepedd/src/pepedd/node_register.py
+    summary: Class registry for node discovery by name.
+  - path: pkgs/pepedd-nodes/src/pepedd_nodes
+    summary: Built-in degradation nodes and their option schemas.
+  - path: digital_art.hcl
+    summary: Example degradation pipeline configuration.
+  - path: wiki
+    summary: User-facing docs and configuration guides.

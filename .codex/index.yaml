@@ -1,0 +1,66 @@
+version: 1
+index:
+  root:
+    - path: README.md
+      description: Top-level project overview and install hints.
+    - path: digital_art.hcl
+      description: Sample HCL configuration for degradation pipelines.
+    - path: pyproject.toml
+      description: uv workspace definition.
+    - path: uv.lock
+      description: Locked dependency graph.
+  core_package:
+    base: pkgs/pepedd/src/pepedd
+    files:
+      - path: pipeline/pipeline.py
+        description: Pipeline class and execution modes (simple/thread/process).
+      - path: pipeline/schema.py
+        description: PipelineOptions/Degradation schemas and defaults.
+      - path: pipeline/process.py
+        description: Node execution loop and per-image processing functions.
+      - path: pipeline/utils.py
+        description: Save logic, output cleanup, RNG seed mixing helpers.
+      - path: objects/node_base.py
+        description: Node base class with per-node probability/seed behavior.
+      - path: objects/lq_hq_state.py
+        description: LQ/HQ state container with RNG.
+      - path: node_register.py
+        description: Registry for node lookup by type string.
+  nodes_package:
+    base: pkgs/pepedd-nodes/src/pepedd_nodes
+    directories:
+      - path: blur
+        description: Blur degradations and blur option schema.
+      - path: compress
+        description: Compression degradations and option schema.
+      - path: resize
+        description: Resize degradations and option schema.
+      - path: dithering
+        description: Dithering degradations and option schema.
+      - path: halo
+        description: Halo degradations and option schema.
+      - path: lines
+        description: Line artifacts degradations and option schema.
+      - path: utils
+        description: Shared image operations (custom blurs, helpers).
+  documentation:
+    base: wiki
+    files:
+      - path: Home.md
+        description: Project overview and goals.
+      - path: Quick‐Start.md
+        description: Installation and minimal usage.
+      - path: Config-Base.md
+        description: Pipeline options and defaults.
+      - path: Config-Blur.md
+        description: Blur node options.
+      - path: Config-Compress.md
+        description: Compression node options.
+      - path: Config-Resize.md
+        description: Resize node options.
+      - path: Config-Dithering.md
+        description: Dithering node options.
+      - path: Config-Halo.md
+        description: Halo node options.
+      - path: Config-Lines.md
+        description: Lines node options.
