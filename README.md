@@ -1,4 +1,5 @@
 # WTP Dataset Destroyer (PepeDD)
+![pepedd](./wiki/assets/logo.png)
 
 PepeDD is a Python library for generating paired HQ/LQ image datasets by applying a configurable, probabilistic degradation pipeline. It is designed for training image restoration, enhancement, and super‑resolution models while keeping data generation deterministic and reproducible when seeded.
 
